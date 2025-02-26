@@ -1,10 +1,3 @@
-//
-//  ToDoListApp.swift
-//  ToDoList
-//
-//  Created by Богдан Делас on 24.02.2025.
-//
-
 import SwiftUI
 
 @main
@@ -13,7 +6,7 @@ struct ToDoListApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TaskListView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
