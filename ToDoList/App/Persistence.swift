@@ -12,7 +12,7 @@ struct PersistenceController {
             let newItem = TaskItem(context: viewContext)
             newItem.name = "Задача \(Int.random(in: 1...100))"
             newItem.desc = "Описание задачи"
-            newItem.dueData = Date()
+            newItem.dueDate = Date()
         }
         
         do {

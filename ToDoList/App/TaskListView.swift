@@ -5,7 +5,7 @@ struct TaskListView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \TaskItem.dueData, ascending: true)],
+        sortDescriptors: [NSSortDescriptor(keyPath: \TaskItem.dueDate, ascending: true)],
         animation: .easeIn)
     
     private var items: FetchedResults<TaskItem>
@@ -24,7 +24,7 @@ struct TaskListView: View {
                 List() {
                     ForEach(items) { item in
                         NavigationLink {
-                            EditingTaskView()
+                            EditingTaskView(item: item)
                         } label: {
                             VStack(alignment: .leading ,spacing: 0) {
                                 Text(item.name ?? "Без названия")
@@ -32,7 +32,7 @@ struct TaskListView: View {
                                 Text(item.desc ?? "Без описания")
                                     .font(.subheadline)
                                     .padding(.bottom, 3)
-                                if let dueDate = item.dueData {
+                                if let dueDate = item.dueDate {
                                     Text(itemFormatter.string(from: dueDate))
                                         .font(.footnote)
                                         .foregroundColor(.gray)
@@ -40,7 +40,9 @@ struct TaskListView: View {
                             }
                         }
                         .contextMenu {
-                            Button{}
+                            NavigationLink{
+                                EditingTaskView(item: item)
+                            }
                             label:{
                                 Text("Редактировать")
                                 Image(systemName: "highlighter")
@@ -66,16 +68,16 @@ struct TaskListView: View {
                             Text("Задачи")
                             ZStack {
                                 NavigationLink {
-                                    //isSecondScreenPresented = true
+//                                    isSecondScreenPresented = true
                                     NewTaskView()
                                 } label: {
                                     Image(systemName: "square.and.pencil")
                                         .font(.system(size: 20))
                                         .foregroundStyle(.yellow)
                                 }
-                                //.sheet(isPresented: $isSecondScreenPresented) {
-                                //TwoScene()
-                                //}
+//                                .sheet(isPresented: $isSecondScreenPresented) {
+//                                    NewTaskView()
+//                                }
                                 .frame(maxWidth: .infinity, alignment: .trailing)
                             }
                         }
@@ -86,10 +88,8 @@ struct TaskListView: View {
     }
     private func deleteItem(_ item: TaskItem) {
         withAnimation {
-            // Удаляем задачу
             viewContext.delete(item)
             
-            // Сохраняем изменения в контексте
             do {
                 try viewContext.save()
             } catch {

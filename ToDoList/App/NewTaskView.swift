@@ -49,24 +49,24 @@ struct NewTaskView: View {
                 // Кнопка "Сохранить"
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Сохранить") {
-                        saveTask()
+                        saveItem()
                     }
                     .foregroundStyle(.yellow)
-                    .disabled(name.isEmpty) // Запрещаем сохранение, если поле пустое
+                    .disabled(name.isEmpty)
                 }
             }
         }
     }
     
-    private func saveTask() {
+    private func saveItem() {
         let newTask = TaskItem(context: viewContext)
         newTask.name = name
         newTask.desc = desc
-        newTask.dueData = Date() // Ставим текущую дату
+        newTask.dueDate = Date()
 
         do {
             try viewContext.save()
-            dismiss() // Закрываем экран после сохранения
+            dismiss()
         } catch {
             print("Ошибка сохранения: \(error.localizedDescription)")
         }
