@@ -18,16 +18,27 @@ struct TaskListView: View {
         return formatter
     }()
     
+    private var filteredItems: [TaskItem] {
+        if searchText.isEmpty {
+            return Array(items) // Возвращаем все задачи, если строка поиска пустая
+        } else {
+            return items.filter { item in
+                item.name?.localizedCaseInsensitiveContains(searchText) ?? false
+            }
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 List() {
-                    ForEach(items) { item in
+                    ForEach(filteredItems) { item in
                         NavigationLink {
                             EditingTaskView(item: item)
                         } label: {
                             VStack(alignment: .leading ,spacing: 0) {
                                 Text(item.name ?? "Без названия")
+                                    .font(.headline)
                                     .padding(EdgeInsets(top: 0, leading: 0, bottom: item.desc!.isEmpty ? 0 : 10, trailing: 0))
                                 Text(item.desc ?? "Без описания")
                                     .font(.subheadline)
@@ -65,7 +76,22 @@ struct TaskListView: View {
                 .toolbar {
                     ToolbarItem(placement: .bottomBar) {
                         ZStack {
-                            Text("Задачи")
+                            if filteredItems.count % 10 == 1{
+                                Text("\(filteredItems.count) задачa")
+                                    .font(.system(size: 15, weight: .light))
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                            } else if
+                                filteredItems.count % 10 == 2 ||
+                                filteredItems.count % 10 == 3 ||
+                                filteredItems.count % 10 == 4 {
+                                Text("\(filteredItems.count) задачи")
+                                    .font(.system(size: 15, weight: .light))
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                            } else {
+                                Text("\(filteredItems.count) задач")
+                                    .font(.system(size: 15, weight: .light))
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                            }
                             ZStack {
                                 NavigationLink {
 //                                    isSecondScreenPresented = true
