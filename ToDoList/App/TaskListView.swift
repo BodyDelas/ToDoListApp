@@ -2,25 +2,26 @@ import SwiftUI
 import CoreData
 
 struct TaskListView: View {
-    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.managedObjectContext)
+    private var viewContext
     
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \TaskItem.dueDate, ascending: true)],
         animation: .easeIn)
-    
     private var items: FetchedResults<TaskItem>
+    
     @State private var searchText = ""
     @State private var isSecondScreenPresented = false
     
     private let itemFormatter: DateFormatter = {
-        let formatter = DateFormatter()
+        let formatter = DateFormatter ()
         formatter.dateFormat = "dd/MM/yyyy"
         return formatter
     }()
     
     private var filteredItems: [TaskItem] {
         if searchText.isEmpty {
-            return Array(items) // Возвращаем все задачи, если строка поиска пустая
+            return Array(items)
         } else {
             return items.filter { item in
                 item.name?.localizedCaseInsensitiveContains(searchText) ?? false
@@ -36,19 +37,38 @@ struct TaskListView: View {
                         NavigationLink {
                             EditingTaskView(item: item)
                         } label: {
-                            VStack(alignment: .leading ,spacing: 0) {
-                                Text(item.name ?? "Без названия")
-                                    .font(.headline)
-                                    .padding(EdgeInsets(top: 0, leading: 0, bottom: item.desc!.isEmpty ? 0 : 10, trailing: 0))
-                                Text(item.desc ?? "Без описания")
-                                    .font(.subheadline)
-                                    .padding(.bottom, 3)
-                                if let dueDate = item.dueDate {
-                                    Text(itemFormatter.string(from: dueDate))
-                                        .font(.footnote)
-                                        .foregroundColor(.gray)
+                            HStack(alignment: .top, spacing: 0) {
+                                Button(action: {
+                                    item.isCompleted.toggle()
+                                    saveContext()
+                                }) {
+                                    Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
+                                        .resizable()
+                                        .frame(width: 24, height: 24)
+                                        .foregroundColor(item.isCompleted ? .green : .gray)
+                                        .padding(.trailing, 15)
+                                }
+                                .buttonStyle(.plain)
+                                VStack(alignment: .leading ,spacing: 0) {
+                                    Text(item.name ?? "Без названия")
+                                        .font(.headline)
+                                        .padding(.bottom, 10)
+                                        .strikethrough(item.isCompleted, color: .gray)
+                                        .foregroundColor(item.isCompleted ? .gray : .primary)
+                                    Text(item.desc ?? "Без описания")
+                                        .font(.subheadline)
+                                        .padding(.bottom, 3)
+                                        .lineLimit(1)
+                                        .truncationMode(.tail)
+                                    
+                                    if let dueDate = item.dueDate {
+                                        Text(itemFormatter.string(from: dueDate))
+                                            .font(.footnote)
+                                            .foregroundColor(.gray)
+                                    }
                                 }
                             }
+                            .padding(.top, 8)
                         }
                         .contextMenu {
                             NavigationLink{
@@ -82,8 +102,8 @@ struct TaskListView: View {
                                     .frame(maxWidth: .infinity, alignment: .center)
                             } else if
                                 filteredItems.count % 10 == 2 ||
-                                filteredItems.count % 10 == 3 ||
-                                filteredItems.count % 10 == 4 {
+                                    filteredItems.count % 10 == 3 ||
+                                    filteredItems.count % 10 == 4 {
                                 Text("\(filteredItems.count) задачи")
                                     .font(.system(size: 15, weight: .light))
                                     .frame(maxWidth: .infinity, alignment: .center)
@@ -94,16 +114,16 @@ struct TaskListView: View {
                             }
                             ZStack {
                                 NavigationLink {
-//                                    isSecondScreenPresented = true
+                                    //                                    isSecondScreenPresented = true
                                     NewTaskView()
                                 } label: {
                                     Image(systemName: "square.and.pencil")
                                         .font(.system(size: 20))
                                         .foregroundStyle(.yellow)
                                 }
-//                                .sheet(isPresented: $isSecondScreenPresented) {
-//                                    NewTaskView()
-//                                }
+                                //                                .sheet(isPresented: $isSecondScreenPresented) {
+                                //                                    NewTaskView()
+                                //                                }
                                 .frame(maxWidth: .infinity, alignment: .trailing)
                             }
                         }
@@ -112,6 +132,15 @@ struct TaskListView: View {
             }
         }
     }
+    
+    private func saveContext() {
+        do {
+            try viewContext.save()
+        } catch {
+            print("Ошибка сохранения: \(error)")
+        }
+    }
+    
     private func deleteItem(_ item: TaskItem) {
         withAnimation {
             viewContext.delete(item)
